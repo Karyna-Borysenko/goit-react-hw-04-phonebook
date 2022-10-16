@@ -6,7 +6,7 @@ import ContactForm from './ContactForm/ContactForm';
 import { Filter } from './Filter/Filter';
 import { ContactsList } from './ContactsList/ContactsList';
 
-import { Container, Header } from './App.styled';
+import { Container, Header, Notice } from './App.styled';
 
 class App extends React.Component {
   state = {
@@ -70,10 +70,15 @@ class App extends React.Component {
 
         <Header>Contacts</Header>
         <Filter value={filter} onChange={this.changeFilter} />
-        <ContactsList
-          contacts={this.visibleContacts()}
-          onDeleteContact={this.deleteContact}
-        />
+
+        {this.visibleContacts().length > 0 ? (
+          <ContactsList
+            contacts={this.visibleContacts()}
+            onDeleteContact={this.deleteContact}
+          />
+        ) : (
+          <Notice>There is nothing to show... ☹️</Notice>
+        )}
       </Container>
     );
   }

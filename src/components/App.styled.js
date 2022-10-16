@@ -16,3 +16,11 @@ export const Header = styled.h1`
   text-align: center;
   font-family: Courier New, monospace;
 `;
+
+export const Notice = styled.p`
+  font-size: 16px;
+  font-weight: 400;
+  text-align: center;
+  font-family: Courier New, monospace;
+  color: #2f9e99;
+`;
