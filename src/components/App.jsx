@@ -1,9 +1,12 @@
 import React from 'react';
 import { nanoid } from 'nanoid';
+import Notiflix from 'notiflix';
 
 import ContactForm from './ContactForm/ContactForm';
 import { Filter } from './Filter/Filter';
 import { ContactsList } from './ContactsList/ContactsList';
+
+import { Container, Header } from './App.styled';
 
 class App extends React.Component {
   state = {
@@ -18,24 +21,21 @@ class App extends React.Component {
 
   //----Добавляем контакты----
   addContact = ({ name, number }) => {
+    const { contacts } = this.state;
     const newContact = {
       id: nanoid(),
       name,
       number,
     };
 
-    this.setState(({ contacts }) => ({
-      contacts: [newContact, ...contacts],
-    }));
+    if (contacts.map(contact => contact.name).includes(name)) {
+      Notiflix.Notify.failure(`${name} is already in contacts.`);
+    } else {
+      this.setState(({ contacts }) => ({
+        contacts: [newContact, ...contacts],
+      }));
+    }
   };
-
-  //  this.setState(({ contacts }) => ({
-  //  contacts: contacts.map(contact =>
-  //  contact.name === name
-  //  ? alert(`${contact.name} is already in contacts.`)
-  //  : [newContact, ...contacts]
-  //  ),
-  //  }));
 
   //----Удаляем контакты----
   deleteContact = contactId => {
@@ -64,17 +64,17 @@ class App extends React.Component {
     const { filter } = this.state;
 
     return (
-      <div>
-        <h1>Phonebook</h1>
+      <Container>
+        <Header>Phonebook</Header>
         <ContactForm onSubmit={this.addContact} />
 
-        <h2>Contacts</h2>
+        <Header>Contacts</Header>
         <Filter value={filter} onChange={this.changeFilter} />
         <ContactsList
           contacts={this.visibleContacts()}
           onDeleteContact={this.deleteContact}
         />
-      </div>
+      </Container>
     );
   }
 }
