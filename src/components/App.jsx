@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { nanoid } from 'nanoid';
 import Notiflix from 'notiflix';
 
@@ -8,31 +8,20 @@ import { ContactsList } from './ContactsList/ContactsList';
 
 import { Container, Header, Notice } from './App.styled';
 
-class App extends React.Component {
-  state = {
-    contacts: [{ id: 'id-1', name: '⭐ GoIT', number: '067 326 95 92' }],
-    filter: '',
-  };
+const initialContact = { id: 'id-1', name: '⭐ GoIT', number: '067 326 95 92' };
 
-  //----Монтирование----
-  componentDidMount() {
-    const parsedLSContacts = JSON.parse(localStorage.getItem('contacts'));
+export default function App() {
+  const [contacts, setContacts] = useState(
+    () => JSON.parse(localStorage.getItem('contacts')) ?? initialContact
+  );
+  const [filter, setFilter] = useState('');
 
-    if (parsedLSContacts) {
-      this.setState({ contacts: parsedLSContacts });
-    }
-  }
-
-  //----Обновление----
-  componentDidUpdate(prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
   //----Добавляем контакты----
-  addContact = ({ name, number }) => {
-    const { contacts } = this.state;
+  function addContact({ name, number }) {
     const newContact = {
       id: nanoid(),
       name,
@@ -42,57 +31,46 @@ class App extends React.Component {
     if (contacts.map(contact => contact.name).includes(name)) {
       Notiflix.Notify.failure(`${name} is already in contacts.`);
     } else {
-      this.setState(({ contacts }) => ({
-        contacts: [newContact, ...contacts],
-      }));
+      setContacts([newContact, ...contacts]);
     }
-  };
+  }
 
   //----Удаляем контакты----
-  deleteContact = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
-  };
+  function deleteContact(contactId) {
+    setContacts(contacts.filter(contact => contact.id !== contactId));
+  }
 
   //----Обновляем фильтр----
-  changeFilter = event => {
-    this.setState({ filter: event.currentTarget.value });
-  };
+  function changeFilter(event) {
+    setFilter(event.currentTarget.value);
+  }
 
   //----Получаем подходящие контакты----
-  visibleContacts = () => {
-    const { contacts, filter } = this.state;
+  function visibleContacts() {
     const normalizedFilter = filter.toLowerCase();
 
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFilter)
     );
-  };
+  }
 
   //----Рендер----
-  render() {
-    const { filter } = this.state;
+  return (
+    <Container>
+      <Header>Phonebook</Header>
+      <ContactForm onSubmit={addContact} />
 
-    return (
-      <Container>
-        <Header>Phonebook</Header>
-        <ContactForm onSubmit={this.addContact} />
+      <Header>Contacts</Header>
+      <Filter value={filter} onChange={changeFilter} />
 
-        <Header>Contacts</Header>
-        <Filter value={filter} onChange={this.changeFilter} />
-
-        {this.visibleContacts().length > 0 ? (
-          <ContactsList
-            contacts={this.visibleContacts()}
-            onDeleteContact={this.deleteContact}
-          />
-        ) : (
-          <Notice>There is nothing to show... ☹️</Notice>
-        )}
-      </Container>
-    );
-  }
+      {visibleContacts().length > 0 ? (
+        <ContactsList
+          contacts={visibleContacts()}
+          onDeleteContact={deleteContact}
+        />
+      ) : (
+        <Notice>There is nothing to show... ☹️</Notice>
+      )}
+    </Container>
+  );
 }
-
-export default App;
